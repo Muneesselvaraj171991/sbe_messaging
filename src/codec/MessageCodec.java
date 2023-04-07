@@ -14,7 +14,7 @@ public interface MessageCodec<T> {
      */
    public interface Creator<T> {
 
-        public T createFromSerializer();
+        public T createFromMessage();
 
 
     }

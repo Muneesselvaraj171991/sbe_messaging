@@ -144,7 +144,7 @@ final public class Message {
             headers.put(readString(), readString());
         }
 
-        T obj = (T) creator.createFromSerializer();
+        T obj = (T) creator.createFromMessage();
         if (obj.getClass().getName().equals(readString())) {
             obj.decode(this);
         } else {
