@@ -26,7 +26,7 @@ public class Main {
         HeadersAndPrimitiveTypes headersAndPrimitiveTypes = new HeadersAndPrimitiveTypes();
 
         for(int header=0; header<63; header++) {
-            beforeMessageCodec2.addHeader("key"+header, "value"+header);
+            beforeMessageCodec2.addHeader("ke"+header, "va"+header);
         }
 
         byte[] payload2 = beforeMessageCodec2.getMessagePayload(headersAndPrimitiveTypes);
@@ -35,7 +35,7 @@ public class Main {
         HeadersAndPrimitiveTypes headersAndPrimitiveTypesAfterDecodec = deCodec2.parseMessage(payload2, HeadersAndPrimitiveTypes.CREATOR);
 
         for(int header=0; header<63; header++) {
-            assert beforeMessageCodec2.getHeaders().get("key"+header).equals(deCodec2.getHeaders().get("key"+header));
+            assert beforeMessageCodec2.getHeaders().get("ke"+header).equals(deCodec2.getHeaders().get("ke"+header));
         }
 
         assert headersAndPrimitiveTypes.equals(headersAndPrimitiveTypesAfterDecodec);

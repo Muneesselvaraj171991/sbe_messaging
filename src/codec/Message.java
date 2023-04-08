@@ -1,6 +1,7 @@
 package codec;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,9 +9,10 @@ final public class Message {
     private static final int HEADERS_LENGTH = 63;
     private static final int HEADERS_MAX_BYTES = 1023;
     private static final int PAYLOAD_CAPACITY = 256000; // 256*1000
-    private static  Message sMessage;
-    public  synchronized static  Message getInstance() {
-        if(sMessage == null) {
+    private static Message sMessage;
+
+    public synchronized static Message getInstance() {
+        if (sMessage == null) {
             sMessage = new Message();
         }
         return sMessage;
@@ -18,7 +20,8 @@ final public class Message {
 
     /**
      * For Testing
-     * @return  new Message instance
+     *
+     * @return new Message instance
      */
     public static Message newInstance() {
         return new Message();
@@ -31,7 +34,6 @@ final public class Message {
     private Map<String, String> headers;
 
     private Message() {
-        byteBuffer = ByteBuffer.allocate(PAYLOAD_CAPACITY+HEADERS_MAX_BYTES);
         headers = new HashMap<>();
 
     }
@@ -44,11 +46,11 @@ final public class Message {
         int stringLen = byteBuffer.getInt();
         byte[] nameBytes = new byte[stringLen];
         byteBuffer.get(nameBytes);
-        return new String(nameBytes);
+        return new String(nameBytes, StandardCharsets.US_ASCII);
     }
 
     public void writeString(String str) {
-        byte[] nameBytes = str.getBytes();
+        byte[] nameBytes = str.getBytes(StandardCharsets.US_ASCII);
         byteBuffer.putInt(nameBytes.length);
         byteBuffer.put(nameBytes);
     }
@@ -118,15 +120,26 @@ final public class Message {
     }
 
     public byte[] getMessagePayload(MessageCodec type) {
+
+        //clear If bytebuffer has values
+        if(byteBuffer!=null) {
+            byteBuffer.clear();
+        }
+        // reallocate the buffer
+        byteBuffer = ByteBuffer.allocate(PAYLOAD_CAPACITY + HEADERS_MAX_BYTES);
         int headerSize = headers.size();
         //Writing Headers to bytebuffer
         writeInt(headerSize);
         for (Map.Entry<String, String> header : headers.entrySet()) {
-            writeString(header.getKey());
-            writeString(header.getValue());
+            if (byteBuffer.position() < HEADERS_MAX_BYTES + 4) {
+                writeString(header.getKey());
+                writeString(header.getValue());
+            } else {
+                throw new IllegalArgumentException("Header max bytes should be less than:" + HEADERS_MAX_BYTES);
+            }
+
 
         }
-
         // Writing Message payload to bytebuffer
         String name = type.getClass().getName();
         writeString(name);
